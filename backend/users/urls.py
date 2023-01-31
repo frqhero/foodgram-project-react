@@ -11,7 +11,7 @@ v1_router.register('users', UserViewSet)
 urlpatterns = [
     # path('', include(v1_router.urls)),
     path('auth/', include('djoser.urls.authtoken')),
-    path('users/', MyViewSet.as_view({'get': 'list'})),
+    path('users/', MyViewSet.as_view({'get': 'list', 'post': 'create'})),
     path('djoser/', include('djoser.urls')),
     path("heck/", include("django.contrib.auth.urls")),
     # re_path(r'^auth/', include('djoser.urls.authtoken')),
