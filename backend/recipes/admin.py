@@ -1,5 +1,9 @@
 from django.contrib import admin
-from .models import Recipe, RecipeTag
+from .models import Recipe, RecipeIngredient
+
+
+class RecipeIngredientInline(admin.TabularInline):
+    model = RecipeIngredient
 
 
 @admin.register(Recipe)
@@ -8,12 +12,14 @@ class RecipeAdmin(admin.ModelAdmin):
         'id',
         'name',
     ]
+    inlines = [RecipeIngredientInline]
 
-@admin.register(RecipeTag)
-class RecipeTagAdmin(admin.ModelAdmin):
+
+@admin.register(RecipeIngredient)
+class RecipeIngredientAdmin(admin.ModelAdmin):
     list_display = [
         'id',
-        'tag',
+        'ingredient',
         'recipe',
         'quantity',
     ]
