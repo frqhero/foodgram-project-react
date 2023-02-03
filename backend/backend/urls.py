@@ -21,4 +21,5 @@ urlpatterns = [
     path('api/users/', include('users.urls')),
     path('api/auth/', include('djoser.urls.authtoken')),
     path('api/ingredients/', include('ingredients.urls')),
+    path('api/tags/', include('tags.urls')),
 ]
