@@ -7,8 +7,7 @@ from tags.models import Tag
 class Recipe(models.Model):
     tags = models.ManyToManyField(Tag, blank=True)
     ingredients = models.ManyToManyField(
-        Ingredient, through="RecipeIngredient", related_name="ingredients"
-    )
+        Ingredient, through="recipes.RecipeIngredient")
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=200)
 
