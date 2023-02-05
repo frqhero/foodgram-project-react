@@ -3,22 +3,16 @@ from rest_framework import serializers
 from .models import Recipe, RecipeIngredient
 from users.serializers import MyDjoserUserCreateSerializer
 from tags.serializers import TagSerializer
-from ingredients.models import Ingredient
-# from ingredients.serializers import IngredientSerializer
-
-
-class IngredientSerializer(ModelSerializer):
-    class Meta:
-        model = Ingredient
-        fields = '__all__'
 
 
 class RecipeIngredientSerializer(ModelSerializer):
-    ingredient = IngredientSerializer()
+    id = serializers.IntegerField(source='ingredient.id')
+    name = serializers.CharField (source='ingredient.name')
+    measurement_unit = serializers.CharField(source='ingredient.measurement_unit')
 
     class Meta:
         model = RecipeIngredient
-        fields = ['id', 'ingredient', 'recipe', 'quantity']
+        fields = ['id', 'name', 'measurement_unit', 'quantity']
 
 
 class RecipeSerializer(ModelSerializer):
@@ -28,5 +22,4 @@ class RecipeSerializer(ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = ['id', 'tags', 'ingredients', 'author', 'name']
-        # depth = 1
+        fields = ['id', 'tags', 'author', 'ingredients', 'name']
