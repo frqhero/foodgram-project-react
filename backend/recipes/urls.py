@@ -10,4 +10,3 @@ my_router.register(r'', RecipeViewSet)
 urlpatterns = [
     path('', include(my_router.urls)),
 ]
-
