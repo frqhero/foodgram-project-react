@@ -27,14 +27,32 @@ class RecipeReadSerializer(ModelSerializer):
         fields = ['id', 'tags', 'author', 'ingredients', 'name', 'image', 'text', 'cooking_time']
 
 
+class RecipeIngredientForCreationSrl(ModelSerializer):
+    id = serializers.PrimaryKeyRelatedField(required=True, queryset=Recipe.objects.all())
+    # id = serializers.IntegerField(source='ingredient.id')
+    class Meta:
+        model = RecipeIngredient
+        fields = ['id', 'quantity']
+
+
 class RecipeCreateSerializer(ModelSerializer):
     tags = serializers.PrimaryKeyRelatedField(
         many=True, read_only=False, queryset=Tag.objects.all()
     )
-
+    ingredients = RecipeIngredientForCreationSrl(many=True, required=True, source='recipeingredient_set')
     class Meta:
         model = Recipe
         fields = ['ingredients', 'tags', 'image', 'name', 'text', 'cooking_time']
 
     def to_representation(self, instance):
         return RecipeReadSerializer().to_representation(instance)
+
+    def validate_tags(self, value):
+        if not value:
+            raise serializers.ValidationError("At least one tag is required.")
+        return value
+
+    def validate_ingredients(self, value):
+        if not value:
+            raise serializers.ValidationError("At least one ingredient is required.")
+        return value
