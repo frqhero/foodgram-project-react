@@ -4,6 +4,9 @@ from .models import Recipe, RecipeIngredient
 from users.serializers import MyDjoserUserCreateSerializer
 from tags.serializers import TagSerializer
 from tags.models import Tag
+from ingredients.models import Ingredient
+from django.core.files.base import ContentFile
+import base64
 
 
 class RecipeIngredientSerializer(ModelSerializer):
@@ -28,18 +31,34 @@ class RecipeReadSerializer(ModelSerializer):
 
 
 class RecipeIngredientForCreationSrl(ModelSerializer):
-    id = serializers.PrimaryKeyRelatedField(required=True, queryset=Recipe.objects.all())
+    id = serializers.PrimaryKeyRelatedField(required=True, queryset=Ingredient.objects.all())
     # id = serializers.IntegerField(source='ingredient.id')
+
     class Meta:
         model = RecipeIngredient
         fields = ['id', 'quantity']
+
+
+class Base64ImageField(serializers.ImageField):
+    def to_internal_value(self, data):
+        if isinstance(data, str) and data.startswith('data:image'):
+            format, imgstr = data.split(';base64,')
+            ext = format.split('/')[-1]
+
+            data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
+
+        return super().to_internal_value(data)
 
 
 class RecipeCreateSerializer(ModelSerializer):
     tags = serializers.PrimaryKeyRelatedField(
         many=True, read_only=False, queryset=Tag.objects.all()
     )
-    ingredients = RecipeIngredientForCreationSrl(many=True, required=True, source='recipeingredient_set')
+    ingredients = RecipeIngredientForCreationSrl(many=True, required=True)
+    name = serializers.CharField()
+    text = serializers.CharField()
+    cooking_time = serializers.IntegerField(min_value=1)
+    image = Base64ImageField()
     class Meta:
         model = Recipe
         fields = ['ingredients', 'tags', 'image', 'name', 'text', 'cooking_time']
@@ -56,3 +75,16 @@ class RecipeCreateSerializer(ModelSerializer):
         if not value:
             raise serializers.ValidationError("At least one ingredient is required.")
         return value
+
+    def create(self, validated_data):
+        ingredients = validated_data.pop('ingredients')
+        instance = super().create(validated_data)
+        new_entries = []
+        for ingredient_initial_data in ingredients:
+            new_recipe_ingredient = RecipeIngredient()
+            new_recipe_ingredient.ingredient = ingredient_initial_data['id']
+            new_recipe_ingredient.recipe = instance
+            new_recipe_ingredient.quantity = ingredient_initial_data['quantity']
+            new_entries.append(new_recipe_ingredient)
+        RecipeIngredient.objects.bulk_create(new_entries)
+        return instance
