@@ -19,6 +19,9 @@ class Recipe(models.Model):
     tags = models.ManyToManyField(Tag, blank=True)
     cooking_time = models.PositiveIntegerField(default=1, validators=[MinValueValidator(1)])
 
+    class Meta:
+        ordering = ['id']
+
     def __str__(self):
         return self.name
 
@@ -26,7 +29,7 @@ class Recipe(models.Model):
 class RecipeIngredient(models.Model):
     ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
-    quantity = models.PositiveIntegerField()
+    amount = models.PositiveIntegerField()
 
     def __str__(self):
         return str(self.quantity)

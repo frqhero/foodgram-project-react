@@ -13,7 +13,6 @@ class RecipeIngredientSerializer(ModelSerializer):
     id = serializers.IntegerField(source='ingredient.id')
     name = serializers.CharField(source='ingredient.name')
     measurement_unit = serializers.CharField(source='ingredient.measurement_unit')
-    amount = serializers.IntegerField(source='quantity')
 
     class Meta:
         model = RecipeIngredient
@@ -31,12 +30,13 @@ class RecipeReadSerializer(ModelSerializer):
 
 
 class RecipeIngredientForCreationSrl(ModelSerializer):
-    id = serializers.PrimaryKeyRelatedField(required=True, queryset=Ingredient.objects.all())
-    # id = serializers.IntegerField(source='ingredient.id')
+    id = serializers.PrimaryKeyRelatedField(
+        required=True, queryset=Ingredient.objects.all()
+    )
 
     class Meta:
         model = RecipeIngredient
-        fields = ['id', 'quantity']
+        fields = ['id', 'amount']
 
 
 class Base64ImageField(serializers.ImageField):
@@ -44,32 +44,26 @@ class Base64ImageField(serializers.ImageField):
         if isinstance(data, str) and data.startswith('data:image'):
             format, imgstr = data.split(';base64,')
             ext = format.split('/')[-1]
-
             data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
-
         return super().to_internal_value(data)
 
 
 class RecipeCreateSerializer(ModelSerializer):
     tags = serializers.PrimaryKeyRelatedField(
-        many=True, read_only=False, queryset=Tag.objects.all()
+        many=True, read_only=False, queryset=Tag.objects.all(), allow_empty=False
     )
-    ingredients = RecipeIngredientForCreationSrl(many=True, required=True)
+    ingredients = RecipeIngredientForCreationSrl(many=True, allow_null=False)
     name = serializers.CharField()
     text = serializers.CharField()
     cooking_time = serializers.IntegerField(min_value=1)
     image = Base64ImageField()
+
     class Meta:
         model = Recipe
         fields = ['ingredients', 'tags', 'image', 'name', 'text', 'cooking_time']
 
     def to_representation(self, instance):
         return RecipeReadSerializer().to_representation(instance)
-
-    def validate_tags(self, value):
-        if not value:
-            raise serializers.ValidationError("At least one tag is required.")
-        return value
 
     def validate_ingredients(self, value):
         if not value:
@@ -84,7 +78,21 @@ class RecipeCreateSerializer(ModelSerializer):
             new_recipe_ingredient = RecipeIngredient()
             new_recipe_ingredient.ingredient = ingredient_initial_data['id']
             new_recipe_ingredient.recipe = instance
-            new_recipe_ingredient.quantity = ingredient_initial_data['quantity']
+            new_recipe_ingredient.amount = ingredient_initial_data['amount']
+            new_entries.append(new_recipe_ingredient)
+        RecipeIngredient.objects.bulk_create(new_entries)
+        return instance
+
+    def update(self, instance, validated_data):
+        ingredients = validated_data.pop('ingredients')
+        instance = super().update(instance, validated_data)
+        RecipeIngredient.objects.filter(recipe=instance).delete()
+        new_entries = []
+        for ingredient_initial_data in ingredients:
+            new_recipe_ingredient = RecipeIngredient()
+            new_recipe_ingredient.ingredient = ingredient_initial_data['id']
+            new_recipe_ingredient.recipe = instance
+            new_recipe_ingredient.amount = ingredient_initial_data['amount']
             new_entries.append(new_recipe_ingredient)
         RecipeIngredient.objects.bulk_create(new_entries)
         return instance

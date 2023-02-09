@@ -21,5 +21,5 @@ class RecipeIngredientAdmin(admin.ModelAdmin):
         'id',
         'ingredient',
         'recipe',
-        'quantity',
+        'amount',
     ]
