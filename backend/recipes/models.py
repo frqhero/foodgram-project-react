@@ -23,7 +23,7 @@ class Recipe(models.Model):
         ordering = ['id']
 
     def __str__(self):
-        return self.name
+        return f'{self.id} {self.name}'
 
 
 class RecipeIngredient(models.Model):

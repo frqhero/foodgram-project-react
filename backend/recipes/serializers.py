@@ -23,10 +23,14 @@ class RecipeReadSerializer(ModelSerializer):
     author = MyDjoserUserCreateSerializer()
     tags = TagSerializer(many=True)
     ingredients = RecipeIngredientSerializer(many=True, source='recipeingredient_set')
-
+    is_favorited = serializers.SerializerMethodField()
     class Meta:
         model = Recipe
-        fields = ['id', 'tags', 'author', 'ingredients', 'name', 'image', 'text', 'cooking_time']
+        fields = ['id', 'tags', 'author', 'ingredients', 'name', 'image', 'text', 'cooking_time', 'is_favorited']
+
+    def get_is_favorited(self, obj):
+        user = self.context['request'].user
+        return bool(obj.user_set.filter(pk=user.pk))
 
 
 class RecipeIngredientForCreationSrl(ModelSerializer):
@@ -96,3 +100,10 @@ class RecipeCreateSerializer(ModelSerializer):
             new_entries.append(new_recipe_ingredient)
         RecipeIngredient.objects.bulk_create(new_entries)
         return instance
+
+
+class RecipeFavSrl(serializers.ModelSerializer):
+    image = serializers.ImageField()
+    class Meta:
+        model = Recipe
+        fields = ['id', 'name', 'image', 'cooking_time']
