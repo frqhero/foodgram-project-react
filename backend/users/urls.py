@@ -1,5 +1,5 @@
-from django.urls import path, include
-from .views import MyViewSet
+from django.urls import path
+from .views import MyViewSet, FavsViewSet
 
 
 urlpatterns = [
@@ -7,4 +7,5 @@ urlpatterns = [
     path('<int:id>/', MyViewSet.as_view({'get': 'retrieve'})),
     path('me/', MyViewSet.as_view({'get': 'me'})),
     path('set_password/', MyViewSet.as_view({'post': 'set_password'})),
+    path('subscriptions/', FavsViewSet.as_view({'get': 'list'}))
 ]

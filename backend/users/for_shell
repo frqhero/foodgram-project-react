@@ -1,0 +1,1 @@
+frq.subscriptions.annotate(recipes_count=Count('recipe')).filter(recipes_count=17)
