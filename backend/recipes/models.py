@@ -32,4 +32,4 @@ class RecipeIngredient(models.Model):
     amount = models.PositiveIntegerField()
 
     def __str__(self):
-        return str(self.quantity)
+        return str(self.amount)
