@@ -30,6 +30,7 @@ class UserAdmin(UserAdmin):
         (_("Important dates"), {"fields": ("last_login", "date_joined")}),
         (("Favs"), {"fields": ("favorites",)}),
         (("Subs"), {"fields": ("subscriptions",)}),
+        (("Cart"), {"fields": ("shopping_cart",)}),
     )
 
 
