@@ -7,6 +7,7 @@ class User(AbstractUser):
     email = models.EmailField(_('email address'), unique=True)
     favorites = models.ManyToManyField('recipes.Recipe', blank=True)
     subscriptions = models.ManyToManyField('users.User', blank=True)
+    shopping_cart = models.ManyToManyField('recipes.Recipe', blank=True, related_name='purchases')
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']

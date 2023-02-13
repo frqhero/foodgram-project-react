@@ -65,3 +65,28 @@ class FavoriteAPIView(APIView):
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
             return Response({'errors': e.args[0]}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CartViewSet(APIView):
+    def post(self, request, id):
+        try:
+            recipe = Recipe.objects.get(id=id)
+            in_shopping_cart = bool(request.user.shopping_cart.filter(pk=id))
+            if in_shopping_cart:
+                raise Exception('Already in cart')
+            request.user.shopping_cart.add(recipe)
+            srl = RecipeFavSrl(instance=recipe, context={'request': request})
+            return Response(srl.data, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({'errors': e.args[0]}, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, id):
+        try:
+            recipe = Recipe.objects.get(id=id)
+            in_shopping_cart = bool(request.user.shopping_cart.filter(pk=id))
+            if not in_shopping_cart:
+                raise Exception('Not in cart')
+            request.user.shopping_cart.remove(recipe)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Exception as e:
+            return Response({'errors': e.args[0]}, status=status.HTTP_400_BAD_REQUEST)
