@@ -22,18 +22,34 @@ class MyViewSet(DjoserUserViewSet):
             return super().get_permissions()
 
 
-class FavsViewSet(
+class SubViewSet(
     mixins.ListModelMixin, GenericViewSet):
     serializer_class = SubSrl
     pagination_class = CustomPageNumberPagination
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            data = serializer.data
+            recipes_limit = request.query_params.get("recipes_limit", None)
+            if recipes_limit is not None and recipes_limit.isnumeric():
+                for item in data:
+                    item['recipes'] = item['recipes'][:int(recipes_limit)]
+            return self.get_paginated_response(data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
     def get_queryset(self):
         user = self.request.user
-        filter_value = self.request.query_params.get('recipes_limit', None)
-        if filter_value:
-            return user.subscriptions.annotate(
-                recipes_count=Count('recipe')).filter(
-                recipes_count=filter_value)
+    #     filter_value = self.request.query_params.get('recipes_limit', None)
+    #     if filter_value:
+    #         return user.subscriptions.annotate(
+    #             recipes_count=Count('recipe')).filter(
+    #             recipes_count=filter_value)
         return user.subscriptions.all()
 
     def post(self, request, id):
