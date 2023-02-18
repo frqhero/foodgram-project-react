@@ -13,6 +13,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .permissions import IsAuthor
 from rest_framework.response import Response
 from rest_framework import status
+from django.db.models import Sum, F
+from django.http import HttpResponse
 
 
 class RecipeViewSet(ModelViewSet):
@@ -65,6 +67,29 @@ class RecipeViewSet(ModelViewSet):
 
 
 class FavoriteAPIView(APIView):
+    def get(self, request):
+        res = request.user.shopping_cart.values(
+            ingredient=F("recipeingredient__ingredient__name"),
+            measurement_unit=F(
+                "recipeingredient__ingredient__measurement_unit"
+            ),
+        ).annotate(amount=Sum("recipeingredient__amount"))
+        x = 1
+        content = ""
+        for item in res:
+            if item["ingredient"]:
+                content += (
+                    f"{item['ingredient']} ({item['measurement_unit']}) - {item['amount']}"
+                    + "\n"
+                )
+
+        # Create the text file
+        response = HttpResponse(content, content_type="text/plain")
+        response["Content-Disposition"] = 'attachment; filename="myfile.txt"'
+
+        # Return the text file as a response
+        return response
+
     def post(self, request, id):
         try:
             recipe = Recipe.objects.get(id=id)
