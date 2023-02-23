@@ -1,14 +1,14 @@
-from djoser.views import UserViewSet as DjoserUserViewSet
-from .paginations import CustomPageNumberPagination
-from rest_framework.permissions import IsAuthenticated
-from rest_framework import mixins
-from rest_framework.viewsets import GenericViewSet
-from .serializers import SubSrl
 from django.db.models import Count
 from django.shortcuts import get_object_or_404
-from .models import User
+from djoser.views import UserViewSet as DjoserUserViewSet
+from rest_framework import mixins, status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework.viewsets import GenericViewSet
+
+from .models import User
+from .paginations import CustomPageNumberPagination
+from .serializers import SubSrl
 
 
 class MyViewSet(DjoserUserViewSet):

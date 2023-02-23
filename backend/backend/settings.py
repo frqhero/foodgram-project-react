@@ -1,4 +1,5 @@
 import os
+
 import dotenv
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -61,14 +62,21 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "backend.wsgi.application"
 
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql",
+#         "NAME": "foodgram",
+#         "USER": "postgres",
+#         "PASSWORD": "postgres",
+#         "HOST": "frqhero.ddns.net",
+#         "PORT": "5432",
+#     }
+# }
+
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "foodgram",
-        "USER": "postgres",
-        "PASSWORD": "postgres",
-        "HOST": "frqhero.ddns.net",
-        "PORT": "5432",
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
 

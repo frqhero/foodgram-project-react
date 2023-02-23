@@ -1,6 +1,6 @@
-from django.urls import path, include
-from .views import TagViewSet
+from django.urls import include, path
 
+from .views import TagViewSet
 
 urlpatterns = [
     path('', TagViewSet.as_view({'get': 'list'})),

@@ -1,8 +1,11 @@
-from django.urls import path, include
+from django.urls import include, path
+
+from rest_framework.routers import SimpleRouter
 from .views import IngredientViewSet
 
+router = SimpleRouter()
+router.register('', IngredientViewSet)
 
 urlpatterns = [
-    path('', IngredientViewSet.as_view({'get': 'list'})),
-    path('<int:pk>/', IngredientViewSet.as_view({'get': 'retrieve'})),
+    path('', include(router.urls))
 ]

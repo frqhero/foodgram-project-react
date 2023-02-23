@@ -1,12 +1,15 @@
-from rest_framework.serializers import ModelSerializer
-from rest_framework import serializers
-from .models import Recipe, RecipeIngredient
-from users.serializers import MyDjoserUserCreateSerializer
-from tags.serializers import TagSerializer
-from tags.models import Tag
-from ingredients.models import Ingredient
-from django.core.files.base import ContentFile
 import base64
+
+from django.core.files.base import ContentFile
+from rest_framework import serializers
+from rest_framework.serializers import ModelSerializer
+
+from ingredients.models import Ingredient
+from tags.models import Tag
+from tags.serializers import TagSerializer
+from users.serializers import MyDjoserUserCreateSerializer
+
+from .models import Recipe, RecipeIngredient
 
 
 class RecipeIngredientSerializer(ModelSerializer):

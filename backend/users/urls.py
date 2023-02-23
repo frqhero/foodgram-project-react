@@ -1,6 +1,6 @@
 from django.urls import path
-from .views import MyViewSet, SubViewSet
 
+from .views import MyViewSet, SubViewSet
 
 urlpatterns = [
     path('', MyViewSet.as_view({'get': 'list', 'post': 'create'})),
