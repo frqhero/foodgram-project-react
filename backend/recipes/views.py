@@ -1,19 +1,17 @@
 from django.db.models import F, Sum
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
 from users.paginations import CustomPageNumberPagination
 
 from .filters import RecipeFilter
-from .models import Recipe, RecipeIngredient
+from .models import Recipe
 from .permissions import IsAuthor
-from .serializers import (RecipeCreateSerializer, RecipeFavSrl,
-                          RecipeReadSerializer)
+from .serializers import RecipeCreateSerializer, RecipeReadSerializer
+from .mixins import PerformCreateAndDestroy
 
 
 class RecipeViewSet(ModelViewSet):
@@ -26,7 +24,7 @@ class RecipeViewSet(ModelViewSet):
         queryset = super().get_queryset()
         user = self.request.user
         anon = user.is_anonymous
-        is_favorited = self.request.query_params.get("is_favorited", None)
+        is_favorited = self.request.query_params.get("is_favorited")
         if is_favorited is not None and not anon:
             if is_favorited == "0":
                 queryset = queryset.exclude(favorites__user=user)
@@ -60,12 +58,8 @@ class RecipeViewSet(ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-    def perform_destroy(self, instance):
-        RecipeIngredient.objects.filter(recipe=instance).delete()
-        instance.delete()
 
-
-class FavoriteAPIView(APIView):
+class FavoriteAPIView(APIView, PerformCreateAndDestroy):
     def get(self, request):
         res = request.user.shopping_cart.values(
             ingredient=F("recipeingredient__ingredient__name"),
@@ -73,7 +67,6 @@ class FavoriteAPIView(APIView):
                 "recipeingredient__ingredient__measurement_unit"
             ),
         ).annotate(amount=Sum("recipeingredient__amount"))
-        x = 1
         content = ""
         for item in res:
             if item["ingredient"]:
@@ -90,57 +83,23 @@ class FavoriteAPIView(APIView):
         return response
 
     def post(self, request, id):
-        try:
-            recipe = Recipe.objects.get(id=id)
-            in_favs = bool(request.user.favorites.filter(pk=id))
-            if in_favs:
-                raise Exception("Already in favs")
-            request.user.favorites.add(recipe)
-            srl = RecipeFavSrl(instance=recipe, context={"request": request})
-            return Response(srl.data, status=status.HTTP_201_CREATED)
-        except Exception as e:
-            return Response(
-                {"errors": e.args[0]}, status=status.HTTP_400_BAD_REQUEST
-            )
+        self.list_type = 'favorites'
+        self.error_msg = 'Already in favorites'
+        return self.create(request, id)
 
     def delete(self, request, id):
-        try:
-            recipe = Recipe.objects.get(id=id)
-            in_favs = bool(request.user.favorites.filter(pk=id))
-            if not in_favs:
-                raise Exception("Not in favs")
-            request.user.favorites.remove(recipe)
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        except Exception as e:
-            return Response(
-                {"errors": e.args[0]}, status=status.HTTP_400_BAD_REQUEST
-            )
+        self.list_type = 'favorites'
+        self.error_msg = 'Not in favorites'
+        return self.destroy(request, id)
 
 
-class CartViewSet(APIView):
+class CartViewSet(APIView, PerformCreateAndDestroy):
     def post(self, request, id):
-        try:
-            recipe = Recipe.objects.get(id=id)
-            in_shopping_cart = bool(request.user.shopping_cart.filter(pk=id))
-            if in_shopping_cart:
-                raise Exception("Already in cart")
-            request.user.shopping_cart.add(recipe)
-            srl = RecipeFavSrl(instance=recipe, context={"request": request})
-            return Response(srl.data, status=status.HTTP_201_CREATED)
-        except Exception as e:
-            return Response(
-                {"errors": e.args[0]}, status=status.HTTP_400_BAD_REQUEST
-            )
+        self.list_type = 'shopping_cart'
+        self.error_msg = 'Already in shopping cart'
+        return self.create(request, id)
 
     def delete(self, request, id):
-        try:
-            recipe = Recipe.objects.get(id=id)
-            in_shopping_cart = bool(request.user.shopping_cart.filter(pk=id))
-            if not in_shopping_cart:
-                raise Exception("Not in cart")
-            request.user.shopping_cart.remove(recipe)
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        except Exception as e:
-            return Response(
-                {"errors": e.args[0]}, status=status.HTTP_400_BAD_REQUEST
-            )
+        self.list_type = 'shopping_cart'
+        self.error_msg = 'Not in shopping cart'
+        return self.destroy(request, id)
