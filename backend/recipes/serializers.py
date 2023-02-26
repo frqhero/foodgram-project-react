@@ -1,8 +1,7 @@
-import base64
-
-from django.core.files.base import ContentFile
+from .fields import Base64ImageField
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
+from rest_framework.validators import UniqueTogetherValidator
 
 from ingredients.models import Ingredient
 from tags.models import Tag
@@ -50,11 +49,11 @@ class RecipeReadSerializer(ModelSerializer):
 
     def get_is_favorited(self, obj):
         user = self.context["request"].user
-        return bool(obj.favorites.filter(pk=user.pk))
+        return obj.favorites.filter(pk=user.pk).exists()
 
     def get_is_in_shopping_cart(self, obj):
         user = self.context["request"].user
-        return bool(obj.purchases.filter(pk=user.pk))
+        return obj.purchases.filter(pk=user.pk).exists()
 
 
 class RecipeIngredientForCreationSrl(ModelSerializer):
@@ -65,15 +64,6 @@ class RecipeIngredientForCreationSrl(ModelSerializer):
     class Meta:
         model = RecipeIngredient
         fields = ["id", "amount"]
-
-
-class Base64ImageField(serializers.ImageField):
-    def to_internal_value(self, data):
-        if isinstance(data, str) and data.startswith("data:image"):
-            format, imgstr = data.split(";base64,")
-            ext = format.split("/")[-1]
-            data = ContentFile(base64.b64decode(imgstr), name="temp." + ext)
-        return super().to_internal_value(data)
 
 
 class RecipeCreateSerializer(ModelSerializer):
@@ -101,41 +91,41 @@ class RecipeCreateSerializer(ModelSerializer):
         ]
 
     def to_representation(self, instance):
-        return RecipeReadSerializer().to_representation(instance)
+        return RecipeReadSerializer(
+            context={"request": self.context["request"]}
+        ).to_representation(instance)
 
     def validate_ingredients(self, value):
         if not value:
             raise serializers.ValidationError(
                 "At least one ingredient is required."
             )
+        if len(set([x["id"] for x in value])) != len(value):
+            raise serializers.ValidationError("Ingredients must be unique")
         return value
 
     def create(self, validated_data):
         ingredients = validated_data.pop("ingredients")
-        instance = super().create(validated_data)
-        new_entries = []
-        for ingredient_initial_data in ingredients:
-            new_recipe_ingredient = RecipeIngredient()
-            new_recipe_ingredient.ingredient = ingredient_initial_data["id"]
-            new_recipe_ingredient.recipe = instance
-            new_recipe_ingredient.amount = ingredient_initial_data["amount"]
-            new_entries.append(new_recipe_ingredient)
-        RecipeIngredient.objects.bulk_create(new_entries)
-        return instance
+        recipe = super().create(validated_data)
+        self.create_recipe_ingredients(recipe, ingredients)
+        return recipe
 
-    def update(self, instance, validated_data):
+    def update(self, recipe, validated_data):
         ingredients = validated_data.pop("ingredients")
-        instance = super().update(instance, validated_data)
-        RecipeIngredient.objects.filter(recipe=instance).delete()
+        recipe = super().update(recipe, validated_data)
+        RecipeIngredient.objects.filter(recipe=recipe).delete()
+        self.create_recipe_ingredients(recipe, ingredients)
+        return recipe
+
+    def create_recipe_ingredients(self, recipe, ingredients):
         new_entries = []
         for ingredient_initial_data in ingredients:
             new_recipe_ingredient = RecipeIngredient()
             new_recipe_ingredient.ingredient = ingredient_initial_data["id"]
-            new_recipe_ingredient.recipe = instance
+            new_recipe_ingredient.recipe = recipe
             new_recipe_ingredient.amount = ingredient_initial_data["amount"]
             new_entries.append(new_recipe_ingredient)
         RecipeIngredient.objects.bulk_create(new_entries)
-        return instance
 
 
 class RecipeFavSrl(serializers.ModelSerializer):
