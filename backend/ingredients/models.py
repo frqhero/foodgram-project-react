@@ -3,13 +3,13 @@ from django.db import models
 
 class Ingredient(models.Model):
     name = models.CharField(
-        max_length=200, blank=False, null=False, verbose_name="name"
+        max_length=200, blank=False, null=False, verbose_name='name'
     )
     measurement_unit = models.CharField(
         max_length=200,
         blank=False,
         null=False,
-        verbose_name="measurement unit",
+        verbose_name='measurement unit',
     )
 
     class Meta:

@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import AnonymousUser
 from djoser.serializers import UserCreateSerializer
 from rest_framework import serializers
 
@@ -16,18 +15,18 @@ class DjoserUserCreateSerializer(UserCreateSerializer):
     class Meta:
         model = User
         fields = (
-            "email",
-            "id",
-            "username",
-            "first_name",
-            "last_name",
-            "password",
-            "is_subscribed"
+            'email',
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'password',
+            'is_subscribed',
         )
         extra_kwargs = {
-            "email": {"required": True},
-            "first_name": {"required": True},
-            "last_name": {"required": True},
+            'email': {'required': True},
+            'first_name': {'required': True},
+            'last_name': {'required': True},
         }
 
     def get_is_subscribed(self, obj):
@@ -53,14 +52,14 @@ class SubSrl(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            "email",
-            "id",
-            "username",
-            "first_name",
-            "last_name",
-            "is_subscribed",
+            'email',
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'is_subscribed',
             'recipes',
-            'recipes_count'
+            'recipes_count',
         ]
 
     def get_is_subscribed(self, obj):

@@ -10,11 +10,11 @@ class Recipe(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=200)
     image = models.ImageField(
-        upload_to="recipes/images/", null=True, default=None
+        upload_to='recipes/images/', null=True, default=None
     )
     text = models.TextField(blank=True, null=True)
     ingredients = models.ManyToManyField(
-        Ingredient, through="recipes.RecipeIngredient"
+        Ingredient, through='recipes.RecipeIngredient'
     )
     tags = models.ManyToManyField(Tag, blank=True)
     cooking_time = models.PositiveIntegerField(
@@ -22,12 +22,12 @@ class Recipe(models.Model):
     )
 
     class Meta:
-        ordering = ["id"]
+        ordering = ['id']
         # я помню про verbose,
         # просто в чем смысл писать доп код если определяется точно также?
 
     def __str__(self):
-        return f"{self.id} {self.name}"
+        return f'{self.id} {self.name}'
 
 
 class RecipeIngredient(models.Model):
@@ -36,7 +36,7 @@ class RecipeIngredient(models.Model):
     amount = models.PositiveIntegerField()
 
     class Meta:
-        unique_together = ["ingredient", "recipe"]
+        unique_together = ['ingredient', 'recipe']
 
     def __str__(self):
         return str(self.amount)

@@ -11,19 +11,18 @@ from .paginations import CustomPageNumberPagination
 from .serializers import SubSrl
 
 
-class MyViewSet(DjoserUserViewSet):
+class UserViewSet(DjoserUserViewSet):
     pagination_class = CustomPageNumberPagination
 
     def get_permissions(self):
-        if self.action == "me":
+        if self.action == 'me':
             self.permission_classes = [IsAuthenticated]
             return [permission() for permission in self.permission_classes]
         else:
             return super().get_permissions()
 
 
-class SubViewSet(
-    mixins.ListModelMixin, GenericViewSet):
+class SubViewSet(mixins.ListModelMixin, GenericViewSet):
     serializer_class = SubSrl
     pagination_class = CustomPageNumberPagination
 
@@ -34,10 +33,10 @@ class SubViewSet(
         if page is not None:
             serializer = self.get_serializer(page, many=True)
             data = serializer.data
-            recipes_limit = request.query_params.get("recipes_limit", None)
+            recipes_limit = request.query_params.get('recipes_limit', None)
             if recipes_limit is not None and recipes_limit.isnumeric():
                 for item in data:
-                    item['recipes'] = item['recipes'][:int(recipes_limit)]
+                    item['recipes'] = item['recipes'][: int(recipes_limit)]
             return self.get_paginated_response(data)
 
         serializer = self.get_serializer(queryset, many=True)
@@ -60,7 +59,9 @@ class SubViewSet(
             srl = SubSrl(instance=following, context={'request': request})
             return Response(srl.data, status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
-            return Response({'errors': e.args[0]}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'errors': e.args[0]}, status=status.HTTP_400_BAD_REQUEST
+            )
 
     def delete(self, request, id):
         following = get_object_or_404(User, id=id)
@@ -71,4 +72,6 @@ class SubViewSet(
             request.user.subscriptions.remove(following)
             return Response(status=status.HTTP_204_NO_CONTENT)
         except Exception as e:
-            return Response({'errors': e.args[0]}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'errors': e.args[0]}, status=status.HTTP_400_BAD_REQUEST
+            )
