@@ -8,7 +8,7 @@ from recipes.models import Recipe
 User = get_user_model()
 
 
-class MyDjoserUserCreateSerializer(UserCreateSerializer):
+class DjoserUserCreateSerializer(UserCreateSerializer):
     first_name = serializers.CharField(allow_blank=False, max_length=150)
     last_name = serializers.CharField(allow_blank=False, max_length=150)
     is_subscribed = serializers.SerializerMethodField()
@@ -32,13 +32,14 @@ class MyDjoserUserCreateSerializer(UserCreateSerializer):
 
     def get_is_subscribed(self, obj):
         user = self.context['request'].user
-        if isinstance(user, AnonymousUser):
+        if not user.is_authenticated:
             return False
-        return bool(user.subscriptions.filter(pk=obj.pk))
+        return user.subscriptions.filter(pk=obj.pk).exists()
 
 
 class RecipeFavSrl(serializers.ModelSerializer):
     image = serializers.ImageField()
+
     class Meta:
         model = Recipe
         fields = ['id', 'name', 'image', 'cooking_time']
@@ -64,6 +65,10 @@ class SubSrl(serializers.ModelSerializer):
 
     def get_is_subscribed(self, obj):
         return True
+        """да, так просто, потому что этот сериализатор используется
+        во вьюшке (в этом же приложении) кверисет у которой это
+        юзеры на кого подписан юзер, поэтому если кверисет не пустой,
+        то юзер полюбому на него подписан"""
 
     def get_recipes_count(self, obj):
         return obj.recipe_set.count()

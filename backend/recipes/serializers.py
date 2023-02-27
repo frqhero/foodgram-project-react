@@ -6,7 +6,7 @@ from rest_framework.validators import UniqueTogetherValidator
 from ingredients.models import Ingredient
 from tags.models import Tag
 from tags.serializers import TagSerializer
-from users.serializers import MyDjoserUserCreateSerializer
+from users.serializers import DjoserUserCreateSerializer
 
 from .models import Recipe, RecipeIngredient
 
@@ -24,7 +24,7 @@ class RecipeIngredientSerializer(ModelSerializer):
 
 
 class RecipeReadSerializer(ModelSerializer):
-    author = MyDjoserUserCreateSerializer()
+    author = DjoserUserCreateSerializer()
     tags = TagSerializer(many=True)
     ingredients = RecipeIngredientSerializer(
         many=True, source="recipeingredient_set"

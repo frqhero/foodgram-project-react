@@ -45,11 +45,6 @@ class SubViewSet(
 
     def get_queryset(self):
         user = self.request.user
-    #     filter_value = self.request.query_params.get('recipes_limit', None)
-    #     if filter_value:
-    #         return user.subscriptions.annotate(
-    #             recipes_count=Count('recipe')).filter(
-    #             recipes_count=filter_value)
         return user.subscriptions.all()
 
     def post(self, request, id):
