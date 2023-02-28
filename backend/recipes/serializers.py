@@ -2,12 +2,11 @@ from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
 from ingredients.models import Ingredient
+from recipes.fields import Base64ImageField
+from recipes.models import Recipe, RecipeIngredient
 from tags.models import Tag
 from tags.serializers import TagSerializer
 from users.serializers import DjoserUserCreateSerializer
-
-from .fields import Base64ImageField
-from .models import Recipe, RecipeIngredient
 
 
 class RecipeIngredientSerializer(ModelSerializer):

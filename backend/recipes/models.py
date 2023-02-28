@@ -23,8 +23,6 @@ class Recipe(models.Model):
 
     class Meta:
         ordering = ['id']
-        # я помню про verbose,
-        # просто в чем смысл писать доп код если определяется точно также?
 
     def __str__(self):
         return f'{self.id} {self.name}'
@@ -36,7 +34,11 @@ class RecipeIngredient(models.Model):
     amount = models.PositiveIntegerField()
 
     class Meta:
-        unique_together = ['ingredient', 'recipe']
+        constraints = [
+            models.UniqueConstraint(fields=[
+                'ingredient', 'recipe'
+            ], name='unique recipe ingredient')
+        ]
 
     def __str__(self):
         return str(self.amount)

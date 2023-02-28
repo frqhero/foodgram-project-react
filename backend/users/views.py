@@ -33,7 +33,7 @@ class SubViewSet(mixins.ListModelMixin, GenericViewSet):
         if page is not None:
             serializer = self.get_serializer(page, many=True)
             data = serializer.data
-            recipes_limit = request.query_params.get('recipes_limit', None)
+            recipes_limit = request.query_params.get('recipes_limit')
             if recipes_limit is not None and recipes_limit.isnumeric():
                 for item in data:
                     item['recipes'] = item['recipes'][: int(recipes_limit)]
@@ -52,7 +52,7 @@ class SubViewSet(mixins.ListModelMixin, GenericViewSet):
         try:
             if user == following:
                 raise Exception('Follower cannot follow themselves')
-            in_subs = bool(user.subscriptions.filter(id=id))
+            in_subs = user.subscriptions.filter(id=id).exists()
             if in_subs:
                 raise Exception('Already in subs')
             request.user.subscriptions.add(following)
@@ -66,7 +66,7 @@ class SubViewSet(mixins.ListModelMixin, GenericViewSet):
     def delete(self, request, id):
         following = get_object_or_404(User, id=id)
         try:
-            in_subs = bool(request.user.subscriptions.filter(id=id))
+            in_subs = request.user.subscriptions.filter(id=id).exists()
             if not in_subs:
                 raise Exception('Not in subs')
             request.user.subscriptions.remove(following)

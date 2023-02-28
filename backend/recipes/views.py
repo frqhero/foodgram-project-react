@@ -5,13 +5,12 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
+from recipes.filters import RecipeFilter
+from recipes.mixins import PerformCreateAndDestroy
+from recipes.models import Recipe
+from recipes.permissions import IsAuthor
+from recipes.serializers import RecipeCreateSerializer, RecipeReadSerializer
 from users.paginations import CustomPageNumberPagination
-
-from .filters import RecipeFilter
-from .mixins import PerformCreateAndDestroy
-from .models import Recipe
-from .permissions import IsAuthor
-from .serializers import RecipeCreateSerializer, RecipeReadSerializer
 
 
 class RecipeViewSet(ModelViewSet):

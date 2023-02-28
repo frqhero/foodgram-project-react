@@ -8,7 +8,8 @@ recipes_router.register(r'', RecipeViewSet)
 
 
 urlpatterns = [
-    path('download_shopping_cart/', FavoriteAPIView.as_view()),
+    path('download_shopping_cart/',
+         FavoriteAPIView.as_view(), name='download_purchases'),
     path('', include(recipes_router.urls)),
     path('<int:id>/favorite/', FavoriteAPIView.as_view()),
     path('<int:id>/shopping_cart/', CartViewSet.as_view()),
