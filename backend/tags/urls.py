@@ -4,6 +4,6 @@ from rest_framework.routers import SimpleRouter
 from .views import TagViewSet
 
 tags_router = SimpleRouter()
-tags_router.register('', TagViewSet)
+tags_router.register('tags', TagViewSet)
 
 urlpatterns = [path('', include(tags_router.urls))]

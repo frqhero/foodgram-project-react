@@ -26,17 +26,17 @@ class RecipeViewSet(ModelViewSet):
         is_favorited = self.request.query_params.get('is_favorited')
         if is_favorited is not None and not anon:
             if is_favorited == '0':
-                queryset = queryset.exclude(favorites__user=user)
+                queryset = queryset.exclude(favorites=user)
             elif is_favorited == '1':
-                queryset = queryset.filter(favorites__user=user)
+                queryset = queryset.filter(favorites=user)
         is_in_shopping_cart = self.request.query_params.get(
-            'is_in_shopping_cart', None
+            'is_in_shopping_cart'
         )
         if is_in_shopping_cart is not None and not anon:
             if is_in_shopping_cart == '0':
-                queryset = queryset.exclude(purchases__user=user)
+                queryset = queryset.exclude(purchases=user)
             elif is_in_shopping_cart == '1':
-                queryset = queryset.filter(purchases__user=user)
+                queryset = queryset.filter(purchases=user)
         return queryset
 
     def get_serializer_class(self):
