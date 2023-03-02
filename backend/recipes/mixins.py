@@ -1,6 +1,6 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
 
 from .models import Recipe
 from .serializers import RecipeFavSrl
@@ -10,9 +10,7 @@ class PerformCreateAndDestroy:
     def check(self, request, id):
         recipe = get_object_or_404(Recipe, id=id)
         return (
-            getattr(request.user, self.list_type)
-                .filter(id=id)
-                .exists()
+            getattr(request.user, self.list_type).filter(id=id).exists()
         ), recipe
 
     def create(self, request, id):

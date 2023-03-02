@@ -22,5 +22,5 @@ urlpatterns = [
         CartViewSet.as_view(),
         name='recipe-in-cart',
     ),
-    path('', include(recipes_router.urls))
+    path('', include(recipes_router.urls)),
 ]
