@@ -1,4 +1,4 @@
-from django.db.models import F, Sum
+from django.db.models import F, Sum, Q
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -17,12 +17,20 @@ class RecipeViewSet(ModelViewSet):
     queryset = Recipe.objects.all()
     pagination_class = CustomPageNumberPagination
     filter_backends = (DjangoFilterBackend,)
-    filterset_class = RecipeFilter
+    # filterset_class = RecipeFilter
+    # filterset_fields = ('tags',)
 
     def get_queryset(self):
         queryset = super().get_queryset()
         user = self.request.user
         anon = user.is_anonymous
+        tags = self.request.query_params.getlist('tags')
+        if tags:
+            q_list = [Q(tags__slug__icontains=param) for param in tags]
+            q_object = q_list.pop()
+            for q in q_list:
+                q_object |= q
+            queryset = queryset.filter(q_object)
         is_favorited = self.request.query_params.get('is_favorited')
         if is_favorited is not None and not anon:
             if is_favorited == '0':
