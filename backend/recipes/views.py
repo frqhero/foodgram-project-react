@@ -17,8 +17,8 @@ class RecipeViewSet(ModelViewSet):
     queryset = Recipe.objects.all()
     pagination_class = CustomPageNumberPagination
     filter_backends = (DjangoFilterBackend,)
-    # filterset_class = RecipeFilter
-    # filterset_fields = ('tags',)
+    filterset_class = RecipeFilter
+    filterset_fields = ('author',)
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -30,7 +30,7 @@ class RecipeViewSet(ModelViewSet):
             q_object = q_list.pop()
             for q in q_list:
                 q_object |= q
-            queryset = queryset.filter(q_object)
+            queryset = queryset.filter(q_object).distinct()
         is_favorited = self.request.query_params.get('is_favorited')
         if is_favorited is not None and not anon:
             if is_favorited == '0':

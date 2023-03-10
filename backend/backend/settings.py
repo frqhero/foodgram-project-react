@@ -146,4 +146,4 @@ LOCALE_PATHS = [
     os.path.join(BASE_DIR, 'backend/locale'),
 ]
 
-CSRF_TRUSTED_ORIGINS = ['http://localhost']
+CSRF_TRUSTED_ORIGINS = ['http://localhost', 'http://frqhero.ddns.net']

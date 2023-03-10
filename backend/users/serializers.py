@@ -37,7 +37,7 @@ class DjoserUserCreateSerializer(UserCreateSerializer):
 
 
 class RecipeFavSrl(serializers.ModelSerializer):
-    image = serializers.ImageField()
+    image = serializers.CharField(source="image.url")
 
     class Meta:
         model = Recipe
