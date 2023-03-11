@@ -43,4 +43,4 @@ docker build -t frqhero/foodgram_frontend .
 ```
 docker compose up
 ```
-Будет использованы обновленные данные
+Будут использованы обновленные данные
